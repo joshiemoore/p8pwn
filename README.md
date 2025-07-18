@@ -22,7 +22,7 @@ If you just want to try out the PoC which pops a calc, download `p8pwn.p8` from 
 If you want to build your own exploit:
 1. Clone this repository.
 2. Write your 32-bit x86 assembly shellcode and assemble it as a flat binary (i.e. using the `-f bin` NASM flag). You can also use the provided `popcalc.s`, which simply opens a calculator.
-   Your assembled shellcode must fit within a single page, minus a few hundred bytes. So you have like ~2k bytes to work with.
+   Your assembled shellcode must fit within a single page, minus a few hundred bytes. So you have a little less than ~4k bytes to work with.
 3. Build the exploit: `$ python3 gen_exploit.py <output file> <shellcode file>`. For example: `$ python3 gen_exploit.py mysploit.p8 myshellcode.bin`
 4. Load the output .p8 file into PICO-8 and run it.
 
