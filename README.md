@@ -5,6 +5,8 @@ can exploit this vulnerability to escape the PICO-8 VM and execute arbitrary cod
 interaction is required to exploit this vulnerability, as the user must load and run a malicious cartridge file to trigger
 the exploit.
 
+https://github.com/user-attachments/assets/3b4b1f4a-03c1-4a65-be86-adc91cc3703d
+
 **DISCLAIMER:** Crime is illegal. This exploit and writeup are being shared publicly for the purpose of fun and education.
 It's about the journey, not the destination! I am not responsible for anything you choose to do with the materials and
 information contained in this repo. DFIU!
