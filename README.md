@@ -1,4 +1,4 @@
-# PICO-8 v0.2.6b 0day VM Escape + RCE Exploit
+# PICO-8 v0.2.6b VM Escape + RCE Exploit
 
 PICO-8 v0.2.6b contains a remote code execution vulnerability due to a buffer overflow in `normalise_pico8_path()`. Attackers
 can exploit this vulnerability to escape the PICO-8 VM and execute arbitrary native code on the host system as the current user. User
@@ -42,7 +42,7 @@ the overflow of `local_41d`, you have to use several subdirectories with each be
 
 ## Exploit
 At a high level, the exploit works like this:
-1. ROP stage 1: overflow the buffer and pivot the stack to the second ROP stage embedded in our exploit script
+1. ROP stage 1: overflow the buffer to overwrite the return address with ROP gadgets that pivot the stack to the second ROP stage embedded in our exploit script
 2. ROP stage 2: call `VirtualProtect()` to mark the page of memory containing our embedded shellcode as executable
 3. Jump to our embedded shellcode end execute it
 
