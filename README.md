@@ -22,12 +22,10 @@ If you just want to try out the PoC which pops a calc, download `p8pwn.p8` from 
 If you want to build your own exploit:
 1. Clone this repository.
 2. Write your 32-bit x86 assembly shellcode and assemble it as a flat binary (i.e. using the `-f bin` NASM flag). You can also use the provided `popcalc.s`, which simply opens a calculator.
-3. Build the exploit: `python3 gen_exploit.py <output file> <shellcode file>`. For example: `python3 gen_exploit.py mysploit.p8 myshellcode.bin`
+3. Build the exploit: `$ python3 gen_exploit.py <output file> <shellcode file>`. For example: `$ python3 gen_exploit.py mysploit.p8 myshellcode.bin`
 4. Load the output .p8 file into PICO-8 and run it.
 
 ## Vulnerability
-PICO-8 v0.2.6b installs pico8.exe, a 32-bit Windows binary with no ASLR or stack canaries.
-
 The core vulnerability is a buffer overflow in `normalise_pico8_path()`. This function takes the user-supplied path string
 passed to `LS()` and converts it to a canonical absolute path that the PICO-8 can reason about internally. So it resolves
 subdirectories, `../`, etc.
@@ -51,6 +49,12 @@ keep on copying what it already copied until it reaches an unmapped page and tri
 the overflow of `local_41d`, you have to use several subdirectories with each being up to 255 bytes long.
 
 ## Exploit
+PICO-8 v0.2.6b installs pico8.exe, a 32-bit Windows binary with no ASLR or stack canaries. The `.data` section is not executable,
+so that's the main issue we need to contend with in order to fully exploit this buffer overflow.
+
+`gen_exploit.py` takes in a binary file containing assembled shellcode and outputs a `.p8` file containing the final exploit.
+This Python script is the main file you should reference if you're trying to understand how this exploit works.
+
 At a high level, the exploit works like this:
 1. ROP stage 1: overflow the buffer to overwrite the return address with ROP gadgets that pivot the stack to the second ROP stage embedded in our exploit script
 2. ROP stage 2: call `VirtualProtect()` to mark the page of memory containing our embedded shellcode as executable
@@ -59,6 +63,36 @@ At a high level, the exploit works like this:
 The biggest speedbump to developing an exploit for this vulnerability was the fact that we can't include null bytes anywhere in our Lua
 strings, or in the Lua source itself. The binary gets loaded at address `0x00400000`, so we cannot directly reference addresses from the
 pico8.exe binary in our ROP chain.
+
+Fortunately, the copy of SD2.dll shipped with PICO-8 gets loaded at `0x6c940000`! So all the ROP gadgets I used in this exploit came from this DLL,
+and there were plenty to choose from. I found an `xor eax, 0x39ffffff ; ret` gadget, and so this enabled me to include null bytes in values in the exploit
+chain. I just had to mask them by XORing them with `0x39ffffff`. So everywhere you see `xor eax, 0x39ffffff` in the chain, that's just us unmasking
+values containing null bytes. This wouldn't work if we needed to have `ff` in the low 3 bytes of the unmasked values, but we didn't in this case.
+
+### ROP stage 1: pivot stack to main ROP chain
+If you open `p8pwn.p8` in the PICO-8 IDE, you'll notice a comment at the top with a long string of strange characters:
+<img width="771" height="199" alt="header" src="https://github.com/user-attachments/assets/6f7196ef-fde8-4d3d-8a3d-314813f30b7f" />
+
+These characters are not for decoration. This is the main ROP chain followed immediately by our assembled shellcode. The whole point of
+the first stage of this exploit is to pivot the stack to point to the location of this comment string in memory so that we can continue the ROP chain.
+
+The string `pwn` consists of padding to fill out the `local_41d` buffer, followed by one gadget which is reponsible for actually pivoting
+the stack:
+```
+-- pop esp ; ret
+pwn = pwn.."\xf9\x73\x94\x6c"
+pwn = pwn.."\x01\x91\x55\x00"
+ls(pwn)
+```
+Here we are popping `0x00559101` into `esp` with a gadget from SDL2.dll. `0x00559101` is the memory location where our comment string starts after the `-- `. Hardcoding the address
+like this works because the binary is not using ASLR. If ASLR were used, then we would have to leak an address first, but it's not, so we don't.
+
+You might notice that there is a null byte at the end of `pwn` even though I said we can't include null bytes. That null byte does get truncated on the Lua side,
+but it gets added back in on the C side because C strings have to be null-terminated. I just included the null in `pwn` for the purpose of clarity.
+
+So we have the malicious string `pwn`, and we pass it to the vulnerable function `LS()` which triggers the exploit and pivots the stack to ROP stage 2.
+
+## ROP stage 2: call VirtualProtect() to make the page containing our shellcode executable
 
 ## Conclusion
 TODO
