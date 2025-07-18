@@ -15,6 +15,16 @@ information contained in this repo. DFIU!
 
 https://github.com/user-attachments/assets/3b4b1f4a-03c1-4a65-be86-adc91cc3703d
 
+## Quickstart
+
+If you just want to try out the PoC which pops a calc, download `p8pwn.p8` from this repo, load it into PICO-8 and run it.
+
+If you want to build your own exploit:
+1. Clone this repository.
+2. Write your 32-bit x86 assembly shellcode and assemble it as a flat binary (i.e. using the `-f bin` NASM flag). You can also use the provided `popcalc.s`, which simply opens a calculator.
+3. Build the exploit: `python3 gen_exploit.py <output file> <shellcode file>`. For example: `python3 gen_exploit.py mysploit.p8 myshellcode.bin`
+4. Load the output .p8 file into PICO-8 and run it.
+
 ## Vulnerability
 PICO-8 v0.2.6b installs pico8.exe, a 32-bit Windows binary with no ASLR or stack canaries.
 
@@ -36,7 +46,7 @@ Each subdirectory is then `strcpy()`'d into the buffer `local_41d` at the curren
 And so we build the full normalized path in `local_41d`. The issue is that there are no length limits or bounds checks on any of
 this, so if you pass in a path containing numerous subdirectories with long names, you can overflow `local_41d` and smash the stack.
 However, each directory name can only be up to 255 bytes (including the ending "/"), or `strcpy()` will end up never
-hitting a null byte, and will instead start copying from from `local_51c` into `local_41d`, then it will reach `local_41d` and just
+hitting a null terminator. It will instead start copying from from `local_51c` into `local_41d`, then it will reach `local_41d` and just
 keep on copying what it already copied until it reaches an unmapped page and triggers an AV. So if you want to actually control
 the overflow of `local_41d`, you have to use several subdirectories with each being up to 255 bytes long.
 
@@ -45,6 +55,10 @@ At a high level, the exploit works like this:
 1. ROP stage 1: overflow the buffer to overwrite the return address with ROP gadgets that pivot the stack to the second ROP stage embedded in our exploit script
 2. ROP stage 2: call `VirtualProtect()` to mark the page of memory containing our embedded shellcode as executable
 3. Jump to our embedded shellcode end execute it
+
+The biggest speedbump to developing an exploit for this vulnerability was the fact that we can't include null bytes anywhere in our Lua
+strings, or in the Lua source itself. The binary gets loaded at address `0x00400000`, so we cannot directly reference addresses from the
+pico8.exe binary in our ROP chain.
 
 ## Conclusion
 TODO
