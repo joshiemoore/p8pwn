@@ -1,4 +1,4 @@
-# PICO-8 v0.2.6b VM Escape + RCE Exploit
+# PICO-8 0day v0.2.6b VM Escape + RCE Exploit
 
 PICO-8 v0.2.6 contains a remote code execution vulnerability due to a buffer overflow in `normalise_pico8_path()`. Attackers
 can exploit this vulnerability to escape the PICO-8 VM and execute arbitrary code on the host system as the local user. User
