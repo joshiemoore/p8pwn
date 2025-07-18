@@ -17,7 +17,10 @@ on something, I'm currently available for new opportunities.
 TODO
 
 ## Exploit
-TODO
+At a high level, the exploit works like this:
+1. ROP stage 1: overflow the buffer and pivot the stack to the second ROP stage embedded in our exploit script
+2. ROP stage 2: call `VirtualProtect()` to mark the page of memory containing our embedded shellcode as executable
+3. Jump to our embedded shellcode end execute it
 
 ## Conclusion
 TODO
