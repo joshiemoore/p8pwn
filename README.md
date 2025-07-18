@@ -4,3 +4,12 @@ PICO-8 v0.2.6 contains a remote code execution vulnerability due to a buffer ove
 can exploit this vulnerability to escape the VM and execute arbitrary code on the host system as the local user. User
 interaction is required to exploit this vulnerability, as the user must load and run a malicious cartridge file to trigger
 the exploit.
+
+## Vulnerability
+TODO
+
+## Exploit
+TODO
+
+## Conclusion
+TODO
