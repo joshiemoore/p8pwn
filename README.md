@@ -63,7 +63,7 @@ so that's the main issue we need to contend with in order to fully exploit this 
 This Python script is the main file you should reference if you're trying to understand how this exploit works.
 
 At a high level, the exploit works like this:
-1. Overflow the buffer to overwrite the return address with ROP gadgets that pivot the stack to the second ROP stage embedded in our exploit script
+1. Overflow `local_41d` to overwrite the return address with ROP gadgets that pivot the stack to the second ROP stage embedded in our exploit script
 2. Call `VirtualProtect()` to mark the page of memory containing our embedded shellcode as executable
 3. Jump to our embedded shellcode end execute it
 
