@@ -23,7 +23,7 @@ If you want to build your own exploit:
 1. Clone this repository.
 2. Write your 32-bit x86 assembly shellcode and assemble it as a flat binary (i.e. using the `-f bin` NASM flag). You can also use the provided `popcalc.s`, which simply opens a calculator.
    Your assembled shellcode must fit within a single page, minus a few hundred bytes. So you have a little less than ~4k bytes to work with.
-3. Build the exploit: `$ python3 gen_exploit.py <output file> <shellcode file>`. For example: `$ python3 gen_exploit.py mysploit.p8 myshellcode.bin`
+3. Build the exploit: `$ python3 build_exploit.py <output file> <shellcode file>`. For example: `$ python3 build_exploit.py mysploit.p8 myshellcode.bin`
 4. Load the output .p8 file into PICO-8 and run it.
 
 This exploit has only been tested on Windows 10, but it will most likely work on Windows 11 too.
@@ -55,7 +55,7 @@ the overflow of `local_41d`, you have to use several subdirectories with each be
 PICO-8 v0.2.6b installs pico8.exe, a 32-bit Windows binary with no ASLR or stack canaries. The `.data` section is not executable,
 so that's the main issue we need to contend with in order to fully exploit this buffer overflow.
 
-`gen_exploit.py` takes in a binary file containing assembled shellcode and outputs a `.p8` file containing the final exploit.
+`build_exploit.py` takes in a binary file containing assembled shellcode and outputs a `.p8` file containing the final exploit.
 This Python script is the main file you should reference if you're trying to understand how this exploit works.
 
 At a high level, the exploit works like this:
@@ -98,7 +98,7 @@ So we have the malicious string `pwn`, and we pass it to the vulnerable function
 ## ROP Stage 2: call VirtualProtect() to make the page containing our shellcode executable
 The next thing we need to do is make it so that we can actually run our shellcode. We need to call `VirtualProtect()` to make this possible.
 
-The comments in `gen_exploit.py` pretty clearly document what's going on in this stage of the ROP chain, so I won't go into great detail here. We're just setting
+The comments in `build_exploit.py` pretty clearly document what's going on in this stage of the ROP chain, so I won't go into great detail here. We're just setting
 up to call `VirtualProtect(<page address>, 0x1000, 0x40, &lpflOldProtect)` and then jumping to make the call.
 
 The calling convention for `VirtualProtect()` expects arguments to be passed on the stack instead of in registers. It was EXTREMELY ANNOYING trying to mask values with
