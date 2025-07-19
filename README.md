@@ -59,8 +59,8 @@ so that's the main issue we need to contend with in order to fully exploit this 
 This Python script is the main file you should reference if you're trying to understand how this exploit works.
 
 At a high level, the exploit works like this:
-1. ROP stage 1: overflow the buffer to overwrite the return address with ROP gadgets that pivot the stack to the second ROP stage embedded in our exploit script
-2. ROP stage 2: call `VirtualProtect()` to mark the page of memory containing our embedded shellcode as executable
+1. Overflow the buffer to overwrite the return address with ROP gadgets that pivot the stack to the second ROP stage embedded in our exploit script
+2. Call `VirtualProtect()` to mark the page of memory containing our embedded shellcode as executable
 3. Jump to our embedded shellcode end execute it
 
 The biggest speedbump to developing an exploit for this vulnerability was the fact that we can't include null bytes anywhere in our Lua
@@ -72,7 +72,7 @@ and there were plenty to choose from. I found an `xor eax, 0x39ffffff ; ret` gad
 chain. I just had to mask them by XORing them with `0x39ffffff`. So everywhere you see `xor eax, 0x39ffffff` in the chain, that's just us unmasking
 values containing null bytes. This wouldn't work if we needed to have `ff` in the low 3 bytes of the unmasked values, but we didn't in this case.
 
-### ROP stage 1: pivot stack to main ROP chain
+### ROP Stage 1: pivot stack to main ROP chain
 If you open `p8pwn.p8` in the PICO-8 IDE, you'll notice a comment at the top with a long string of strange characters:
 <img width="771" height="199" alt="header" src="https://github.com/user-attachments/assets/6f7196ef-fde8-4d3d-8a3d-314813f30b7f" />
 
@@ -87,7 +87,7 @@ pwn = pwn.."\xf9\x73\x94\x6c"
 pwn = pwn.."\x01\x91\x55\x00"
 ls(pwn)
 ```
-Here we are popping `0x00559101` into `esp` with a gadget from SDL2.dll. `0x00559101` is the memory location where our comment string starts after the `-- `. Hardcoding the address
+Here we are popping `0x00559101` into `ESP` with a gadget from SDL2.dll. `0x00559101` is the memory location where our comment string starts after the `-- `. Hardcoding the address
 like this works because the binary is not using ASLR. If ASLR were used, then we would have to leak an address first, but it's not, so we don't.
 
 You might notice that there is a null byte at the end of `pwn` even though I said we can't include null bytes. That null byte does get truncated on the Lua side,
@@ -95,7 +95,24 @@ but it gets added back in on the C side because C strings have to be null-termin
 
 So we have the malicious string `pwn`, and we pass it to the vulnerable function `LS()` which triggers the exploit and pivots the stack to ROP stage 2.
 
-## ROP stage 2: call VirtualProtect() to make the page containing our shellcode executable
+## ROP Stage 2: call VirtualProtect() to make the page containing our shellcode executable
+The next thing we need to do is make it so that we can actually run our shellcode. We need to call `VirtualProtect()` to make this possible.
+
+The comments in `gen_exploit.py` pretty clearly document what's going on in this stage of the ROP chain, so I won't go into great detail here. We're just setting
+up to call `VirtualProtect(<page address>, 0x1000, 0x40, &lpflOldProtect)` and then jumping to make the call.
+
+The calling convention for `VirtualProtect()` expects arguments to be passed on the stack instead of in registers. It was EXTREMELY ANNOYING trying to mask values with
+our `0x39ffffff` mask and place them on the stack for the `VirtualProtect()` call, so I gave up on that and instead tried to find a spot in pico8.exe that makes
+a `VirtualProtect()` call that I could hijack. I found such a spot in the function `mark_section_writable()`:
+
+<img width="633" height="148" alt="virtualprotect" src="https://github.com/user-attachments/assets/d2d03b99-3590-418a-a8a3-41798f02bc61" />
+
+It's beautiful, we couldn't have asked for a better setup. All we need to do is load the address of our page into `EAX`, the length into `EDX`, and an
+address for `lpflOldProtect` into `EBX`. So we unmask these values with `0x39ffffff` in `EAX` and then `xchg` them into the proper registers.
+We don't need the output value `lpflOldProtect`, so I just set this to point to a location right before our
+comment string in memory. Really, this could be a pointer to any writable memory address.
+
+## Stage 3: Jump to our shellcode
 
 ## Conclusion
 TODO
