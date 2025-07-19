@@ -19,7 +19,7 @@ https://github.com/user-attachments/assets/3b4b1f4a-03c1-4a65-be86-adc91cc3703d
 
 If you just want to try out the PoC which pops a calculator, you can load this cart into PICO-8 and run it:
 
-<img src="p8pwn.p8.png" width="25%">
+![](p8pwn.p8.png)
 
 This exploit has only been tested on Windows 10, but it will most likely work on Windows 11 too.
 
