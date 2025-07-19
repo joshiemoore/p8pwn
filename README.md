@@ -17,16 +17,20 @@ https://github.com/user-attachments/assets/3b4b1f4a-03c1-4a65-be86-adc91cc3703d
 
 ## Quickstart
 
-If you just want to try out the PoC which pops a calc, download `p8pwn.p8` from this repo, load it into PICO-8 and run it.
+If you just want to try out the PoC which pops a calc, you can load this cart into PICO-8 and run it:
 
-If you want to build your own exploit:
+![](p8pwn.p8.png)
+
+This exploit has only been tested on Windows 10, but it will most likely work on Windows 11 too.
+
+**If you want to build your own exploit:**
 1. Clone this repository.
 2. Write your 32-bit x86 assembly shellcode and assemble it as a flat binary (i.e. using the `-f bin` NASM flag). You can also use the provided `popcalc.s`, which simply opens a calculator.
    Your assembled shellcode must fit within a single page, minus a few hundred bytes. So you have a little less than ~4k bytes to work with.
 3. Build the exploit: `$ python3 build_exploit.py <output file> <shellcode file>`. For example: `$ python3 build_exploit.py mysploit.p8 myshellcode.bin`
 4. Load the output .p8 file into PICO-8 and run it.
 
-This exploit has only been tested on Windows 10, but it will most likely work on Windows 11 too.
+
 
 ## Vulnerability
 The core vulnerability is a buffer overflow in `normalise_pico8_path()`. This function takes the user-supplied path string
