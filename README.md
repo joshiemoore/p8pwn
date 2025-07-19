@@ -136,4 +136,21 @@ We dynamically calculate the offset of the shellcode based on the length of the 
 chain in the comment string. The address of our shellcode is loaded into `EAX` and unmasked. We then jump to the shellcode and we have pwned the PICO-8.
 
 ## Conclusion
-TODO
+This exploit isn't perfect, but it's a reliable and functional PoC. We could improve it by implementing process
+continuation so that the PICO-8 process doesn't just crash after the shellcode runs.
+
+Also, it would be a good idea to remove all these hardcoded addresses from the exploit chain. Hardcoded addresses work because there is no ASLR here, but
+if there was ASLR, we would need to leak an address to dynamically calculate the runtime base address of the binary in memory. We can actually do that pretty
+easily with the undocumented `TOSTRING()` function from PICO-8's Lua API:
+
+```
+> PRINT(TOSTRING(LS))
+FUNCTION: 0X456B60
+```
+
+This leaks the actual address of the native `_p8_ls()` C function, so we could subtract that value from the known offset of this function in the
+binary in order to determine the runtime base address. I just didn't find it necessary to actually do that for this PoC.
+
+Thanks for taking the time to read this writeup.
+Follow me on [instagram](https://instagram.com/joshiemoore) if you're interested in keeping up with my activities related to reverse engineering
+and binary exploitation!
