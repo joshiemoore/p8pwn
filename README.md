@@ -17,7 +17,7 @@ https://github.com/user-attachments/assets/3b4b1f4a-03c1-4a65-be86-adc91cc3703d
 
 ## Quickstart
 
-If you just want to try out the PoC which pops a calc, you can load this cart into PICO-8 and run it:
+If you just want to try out the PoC which pops a calculator, you can load this cart into PICO-8 and run it:
 
 ![](p8pwn.p8.png)
 
