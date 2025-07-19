@@ -65,7 +65,7 @@ This Python script is the main file you should reference if you're trying to und
 At a high level, the exploit works like this:
 1. Overflow `local_41d` to overwrite the return address with ROP gadgets that pivot the stack to the second ROP stage embedded in our exploit script
 2. Call `VirtualProtect()` to mark the page of memory containing our embedded shellcode as executable
-3. Jump to our embedded shellcode end execute it
+3. Jump to our embedded shellcode and execute it
 
 The biggest speedbump to developing an exploit for this vulnerability was the fact that we can't include null bytes anywhere in our Lua
 strings, or in the Lua source itself. The binary gets loaded at address `0x00400000`, so we cannot directly reference addresses from the
