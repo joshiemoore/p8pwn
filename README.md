@@ -152,8 +152,7 @@ easily with the undocumented `TOSTRING()` function from PICO-8's Lua API:
 FUNCTION: 0X456B60
 ```
 
-This leaks the actual address of the native `_p8_ls()` C function, so we could subtract that value from the known offset of this function in the
-binary in order to determine the runtime base address. I just didn't find it necessary to actually do that for this PoC.
+This leaks the actual address of the native `_p8_ls()` C function, so we could subtract the known offset of this function in the binary from this address in order to determine the runtime base address. I just didn't find it necessary to actually do that for this PoC.
 
 Thanks for taking the time to read this writeup.
 Follow me on [instagram](https://instagram.com/joshiemoore) if you're interested in keeping up with my activities related to reverse engineering
