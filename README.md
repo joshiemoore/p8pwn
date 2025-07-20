@@ -5,7 +5,7 @@ can exploit this vulnerability to escape the PICO-8 sandbox and execute arbitrar
 interaction is required to exploit this vulnerability, as the user must load and run a malicious cartridge file to trigger
 the exploit.
 
-If you have questions, comments, or hatred to share, please DM me on instagram [@joshiemoore](https://instagram.com/joshiemoore).
+If you have questions, comments, or hatred to share, please DM me on X [@joshiem00re](https://x.com/joshiem00re).
 Followers are more likely to have their questions answered. Also, feel free to reach out if you would like to pay me to work
 on something, I'm currently available for new opportunities. 
 
@@ -155,5 +155,5 @@ FUNCTION: 0X456B60
 This leaks the actual address of the native `_p8_ls()` C function, so we could subtract the known offset of this function in the binary from this address in order to determine the runtime base address. I just didn't find it necessary to actually do that for this PoC.
 
 Thanks for taking the time to read this writeup.
-Follow me on [instagram](https://instagram.com/joshiemoore) if you're interested in keeping up with my activities related to reverse engineering
+Follow me on X [@joshiem00re](https://x.com/joshiem00re) if you're interested in keeping up with my activities related to reverse engineering
 and binary exploitation!
