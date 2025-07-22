@@ -5,7 +5,7 @@ can exploit this vulnerability to escape the PICO-8 sandbox and execute arbitrar
 interaction is required to exploit this vulnerability, as the user must load and run a malicious cartridge file to trigger
 the exploit.
 
-If you have questions, comments, or hatred to share, please DM me on instagram [@joshiemoore](https://instagram.com/joshiemoore).
+If you have questions, comments, or hatred to share, please DM me on X [@joshiem00re](https://x.com/joshiem00re).
 Followers are more likely to have their questions answered. Also, feel free to reach out if you would like to pay me to work
 on something, I'm currently available for new opportunities. 
 
@@ -17,16 +17,20 @@ https://github.com/user-attachments/assets/3b4b1f4a-03c1-4a65-be86-adc91cc3703d
 
 ## Quickstart
 
-If you just want to try out the PoC which pops a calc, download `p8pwn.p8` from this repo, load it into PICO-8 and run it.
+If you just want to try out the PoC which pops a calculator, you can load this cart into PICO-8 and run it:
 
-If you want to build your own exploit:
+![](p8pwn.p8.png)
+
+This exploit has only been tested on Windows 10, but it will most likely work on Windows 11 too.
+
+**If you want to build your own exploit:**
 1. Clone this repository.
 2. Write your 32-bit x86 assembly shellcode and assemble it as a flat binary (i.e. using the `-f bin` NASM flag). You can also use the provided `popcalc.s`, which simply opens a calculator.
    Your assembled shellcode must fit within a single page, minus a few hundred bytes. So you have a little less than ~4k bytes to work with.
 3. Build the exploit: `$ python3 build_exploit.py <output file> <shellcode file>`. For example: `$ python3 build_exploit.py mysploit.p8 myshellcode.bin`
 4. Load the output .p8 file into PICO-8 and run it.
 
-This exploit has only been tested on Windows 10, but it will most likely work on Windows 11 too.
+
 
 ## Vulnerability
 The core vulnerability is a buffer overflow in `normalise_pico8_path()`. This function takes the user-supplied path string
@@ -59,9 +63,9 @@ so that's the main issue we need to contend with in order to fully exploit this 
 This Python script is the main file you should reference if you're trying to understand how this exploit works.
 
 At a high level, the exploit works like this:
-1. Overflow the buffer to overwrite the return address with ROP gadgets that pivot the stack to the second ROP stage embedded in our exploit script
+1. Overflow `local_41d` to overwrite the return address with ROP gadgets that pivot the stack to the second ROP stage embedded in our exploit script
 2. Call `VirtualProtect()` to mark the page of memory containing our embedded shellcode as executable
-3. Jump to our embedded shellcode end execute it
+3. Jump to our embedded shellcode and execute it
 
 The biggest speedbump to developing an exploit for this vulnerability was the fact that we can't include null bytes anywhere in our Lua
 strings, or in the Lua source itself. The binary gets loaded at address `0x00400000`, so we cannot directly reference addresses from the
@@ -148,9 +152,8 @@ easily with the undocumented `TOSTRING()` function from PICO-8's Lua API:
 FUNCTION: 0X456B60
 ```
 
-This leaks the actual address of the native `_p8_ls()` C function, so we could subtract that value from the known offset of this function in the
-binary in order to determine the runtime base address. I just didn't find it necessary to actually do that for this PoC.
+This leaks the actual address of the native `_p8_ls()` C function, so we could subtract the known offset of this function in the binary from this address in order to determine the runtime base address. I just didn't find it necessary to actually do that for this PoC.
 
 Thanks for taking the time to read this writeup.
-Follow me on [instagram](https://instagram.com/joshiemoore) if you're interested in keeping up with my activities related to reverse engineering
+Follow me on X [@joshiem00re](https://x.com/joshiem00re) if you're interested in keeping up with my activities related to reverse engineering
 and binary exploitation!
